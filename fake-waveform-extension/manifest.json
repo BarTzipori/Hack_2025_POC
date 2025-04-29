@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "Fake News Detection Helper",
+  "description": "Highlights problematic claims inside YouTube videos with a waveform",
+  "version": "1.1",
+  "permissions": [
+    "storage",
+    "scripting",
+    "activeTab"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["sounds/ding.mp3"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon.png",
+      "48": "icons/icon.png",
+      "128": "icons/icon.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "js": ["content.js"]
+    }
+  ]
+}
