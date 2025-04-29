@@ -1,2 +1,17 @@
 # Hack_2025_POC
 This is a POC for TechnionHACK2025 
+
+#installation:
+
+please download the folder and install it as a chrome extension using development mode.
+
+Current features:
+
+1. Displays a graph showing locations of "problematic" claims throughout the video.
+2. Locations of problematic claims are shown as dots on the graph, the redder the dot - the more severe the claim is.
+3. Clicking directly on a point, will move to a timestamp a few moments before a claim, so you can hear it again.
+4. a Chime sound will be played as you encounter a problematic claim + a pop up notification displaying it.
+5. Hovering over a dot in the graph also shows a briefe explanation aobut the claim.
+6. Plug in settings are adjustabme via the settings menu.
+
+![הדגמת פלאג אין](https://github.com/user-attachments/assets/d14b65ca-16a2-43a6-aff8-a7527faf6187)
