@@ -11,7 +11,7 @@ please download the folder and install it as a chrome extension using developmen
 2. Locations of problematic claims are shown as dots on the graph, the redder the dot - the more severe the claim is.
 3. Clicking directly on a point, will move to a timestamp a few moments before a claim, so you can hear it again.
 4. A chime sound will be played as you encounter a problematic claim + a pop up notification displaying it (see image below).
-5. Hovering over a dot in the graph also shows a brief explanation aobut the claim.
+5. Hovering over a dot in the graph also shows a brief explanation about the claim.
 6. Plug in settings are adjustabme via the settings menu (colors of all elements can be adjusted, the chime can be turned off and the graph can be hidden).
 
 # Limitations:
