@@ -1,7 +1,7 @@
 # Hack_2025_POC
 This is a POC for TechnionHACK2025 
 
-#installation:
+# installation:
 
 please download the folder and install it as a chrome extension using development mode.
 
