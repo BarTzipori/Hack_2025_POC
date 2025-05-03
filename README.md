@@ -19,3 +19,5 @@ please download the folder and install it as a chrome extension using developmen
 As it stands, I MANUALLY impented three claims, just as a way of demonstrating it (the input for the plugin is timestamp, and claim text). This should be changed to a dynamic system that gets the same input (timestamp, and textual information) from our truth checking pipeline.
 This will be the main addition to this plugin going forward.
 ![הדגמת פלאג אין](https://github.com/user-attachments/assets/d14b65ca-16a2-43a6-aff8-a7527faf6187)
+# Dev Branch Additions:
+If a transcript for the video exists, the plugin aill download it.
