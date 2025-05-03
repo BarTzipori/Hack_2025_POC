@@ -69,6 +69,79 @@ function waitForVideo() {
   }, 500);
 }
 
+let currentVideoId = null;
+
+function checkForNewVideo() {
+  const videoId = new URLSearchParams(window.location.search).get('v');
+  if (videoId && videoId !== currentVideoId) {
+    currentVideoId = videoId;
+    console.log("New video detected:", videoId);
+    fetchTranscriptFromPage();
+  }
+}
+
+setInterval(checkForNewVideo, 1000);
+
+function fetchTranscriptFromPage() {
+  const scripts = Array.from(document.querySelectorAll('script'));
+  const playerScript = scripts.find(s => s.textContent.includes('ytInitialPlayerResponse'));
+  if (!playerScript) return console.warn("❌ No ytInitialPlayerResponse script found");
+
+  const match = playerScript.textContent.match(/ytInitialPlayerResponse\s*=\s*(\{.*?\});/s);
+  if (!match || !match[1]) return console.warn("❌ Could not parse ytInitialPlayerResponse JSON");
+
+  let playerData;
+  try {
+    playerData = JSON.parse(match[1]);
+  } catch (e) {
+    console.error("❌ Failed to parse player response JSON:", e);
+    return;
+  }
+
+  const tracks = playerData?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
+  if (!tracks || !tracks.length) return console.warn("No caption tracks found");
+
+  const track = tracks.find(t => t.languageCode === 'en') || tracks[0];
+  if (!track || !track.baseUrl) return console.warn("No valid caption track URL");
+
+  fetch(track.baseUrl)
+    .then(res => res.text())
+    .then(xml => {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xml, "text/xml");
+      const texts = Array.from(xmlDoc.getElementsByTagName("text")).map(t => ({
+        startTime: parseFloat(t.getAttribute("start")),
+        endTime: parseFloat(t.getAttribute("start")) + parseFloat(t.getAttribute("dur")),
+        text: t.textContent
+      }));
+		console.log("Transcript from page:");
+		console.table(texts);
+
+		//Save to file too
+		saveTranscriptToFile(texts, currentVideoId);
+    })
+    .catch(err => {
+      console.error("Failed to fetch transcript:", err);
+    });
+}
+
+function saveTranscriptToFile(transcriptArray, videoId) {
+  const lines = transcriptArray.map(claim =>
+    `[${claim.startTime.toFixed(2)} - ${claim.endTime.toFixed(2)}] ${claim.text}`
+  );
+
+  const blob = new Blob([lines.join("\n")], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `transcript_${videoId}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 function setupWaveform() {
   const container = document.createElement('div');
   container.id = 'waveformContainer';

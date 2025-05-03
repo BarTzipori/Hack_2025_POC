@@ -8,6 +8,10 @@
     "scripting",
     "activeTab"
   ],
+  "host_permissions": [
+    "https://www.youtube.com/*",
+    "https://video.google.com/*"
+  ],
   "web_accessible_resources": [
     {
       "resources": ["sounds/ding.mp3"],
@@ -29,3 +33,4 @@
     }
   ]
 }
+
