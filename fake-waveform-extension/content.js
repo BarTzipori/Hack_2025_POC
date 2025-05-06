@@ -8,6 +8,7 @@ previousTime = 0; // Reset when loading new video
 let lastKnownDuration = 0;
 let notifiedClaims = new Set();
 let dingAudio = new Audio(chrome.runtime.getURL('sounds/ding.mp3'));
+let lastDetectedVideoId = null;
 
 const fakeClaims = [
   { time: 30, score: 0.2, text: "Minor error." },
@@ -40,6 +41,24 @@ function detectVideoPlatformAndId() {
   }
 
   return { platform: null, videoId: null };
+}
+
+function observeTikTokVideoChanges() {
+  const observer = new MutationObserver(() => {
+    const currentUrl = window.location.href;
+    const match = currentUrl.match(/\/video\/(\d+)/);
+    const videoId = match ? match[1] : null;
+    
+    if (videoId && videoId !== lastDetectedVideoId) {
+      console.log(`🔄 New TikTok video detected: ${videoId}`);
+      lastDetectedVideoId = videoId;
+
+      // Call your waveform redraw logic here
+      setupWaveform();
+    }
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
 }
 
 setInterval(() => {
@@ -331,4 +350,9 @@ function showNotificationPopup(text) {
   } else {
     console.error("dingAudio is undefined ");
   }
+}
+
+if (window.location.hostname.includes("tiktok.com")) {
+  observeTikTokVideoChanges();
+  waitForVideo();
 }
