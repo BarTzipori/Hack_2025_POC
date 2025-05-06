@@ -24,7 +24,9 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://www.youtube.com/*"],
+      "matches": ["https://www.youtube.com/*",
+      "https://www.tiktok.com/*"
+    ],
       "js": ["content.js"]
     }
   ]

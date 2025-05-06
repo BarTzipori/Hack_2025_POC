@@ -1,7 +1,8 @@
 console.log("content.js loaded");
-
+let currentPlatform = null;
+let currentVideoId = null;
+let video = null;
 let settings = {};
-let video;
 let lastTime = 0;
 previousTime = 0; // Reset when loading new video
 let lastKnownDuration = 0;
@@ -13,6 +14,43 @@ const fakeClaims = [
   { time: 90, score: 0.6, text: "Significant false claim." },
   { time: 150, score: 0.9, text: "Major misinformation." }
 ];
+
+function detectVideoPlatformAndId() {
+  const url = new URL(window.location.href);
+
+  if (url.hostname.includes("youtube.com")) {
+    const id = new URLSearchParams(url.search).get("v");
+    return { platform: "youtube", videoId: id };
+  }
+
+  if (url.hostname.includes("tiktok.com")) {
+    const match = url.pathname.match(/\/video\/(\d+)/);
+    if (match) return { platform: "tiktok", videoId: match[1] };
+  }
+
+  return { platform: null, videoId: null };
+}
+
+setInterval(() => {
+  const { platform, videoId } = detectVideoPlatformAndId();
+
+  // Skip if no new video
+  if (!videoId || videoId === currentVideoId) return;
+
+  console.log(`🎬 Detected new ${platform} video: ${videoId}`);
+
+  currentPlatform = platform;
+  currentVideoId = videoId;
+
+  waitForVideoElement(() => {
+    video = document.querySelector("video");
+    if (video) {
+      console.log("Video element found");
+      drawWaveform();      // redraw with correct scale
+      startMarkerUpdate(); // restart tracking + notifications
+    }
+  });
+}, 1000);
 
 chrome.storage.sync.get([
   'bgColor', 'lineColor', 'timeMarkerColor', 'theme',
