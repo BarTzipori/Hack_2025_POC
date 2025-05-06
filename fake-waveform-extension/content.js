@@ -61,26 +61,49 @@ function observeTikTokVideoChanges() {
   observer.observe(document.body, { childList: true, subtree: true });
 }
 
-setInterval(() => {
-  const { platform, videoId } = detectVideoPlatformAndId();
+let lastPath = window.location.pathname;
 
-  // Skip if no new video
-  if (!videoId || videoId === currentVideoId) return;
+if (window.location.hostname.includes("tiktok.com")) {
+  setInterval(() => {
+    const currentPath = window.location.pathname;
 
-  console.log(`🎬 Detected new ${platform} video: ${videoId}`);
+    // ✅ Update lastPath only if path actually changed
+    if (currentPath !== lastPath) {
+      lastPath = currentPath;
 
-  currentPlatform = platform;
-  currentVideoId = videoId;
+      if (currentPath.startsWith("/explore")) {
+        const waveform = document.getElementById("waveformContainer");
+        if (waveform) {
+          console.log("🧹 Removing waveform on TikTok Explore page.");
+          waveform.remove();
+        }
+        console.log("🔕 On TikTok Explore, skipping plugin actions.");
+        return;
+      }
 
-  waitForVideo(() => {
-    video = document.querySelector("video");
-    if (video) {
-      console.log("Video element found");
-      drawWaveform();      // redraw with correct scale
-      startMarkerUpdate(); // restart tracking + notifications
+      if (!currentPath.includes("/video/") && document.getElementById("waveformContainer")) {
+        console.log("🧹 Navigated away from video, removing waveform.");
+        document.getElementById("waveformContainer").remove();
+      }
+
+      const match = currentPath.match(/\/video\/(\d+)/);
+      if (match) {
+        console.log("👀 TikTok path changed to new video:", match[1]);
+        currentVideoId = match[1];
+        waitForVideo();
+
+        setTimeout(() => {
+          video = document.querySelector("video");
+          if (video) {
+            console.log("🔄 Redrawing waveform for new TikTok video");
+            drawWaveform();
+            startMarkerUpdate();
+          }
+        }, 1000);
+      }
     }
-  });
-}, 1000);
+  }, 1000);
+}
 
 chrome.storage.sync.get([
   'bgColor', 'lineColor', 'timeMarkerColor', 'theme',
@@ -252,23 +275,39 @@ function getDotColor(score) {
 
 function startMarkerUpdate() {
   const marker = document.getElementById('timeMarker');
-  setInterval(() => {
-    if (!video || !marker) return;
+  let lastKnownDuration = 0;
+  let lastTime = 0;
 
-    const progress = (video.currentTime / video.duration) * 100;
+  setInterval(() => {
+    const currentVideo = document.querySelector("video");
+    if (!currentVideo || !marker) return;
+
+    video = currentVideo;
+
+    const currentTime = video.currentTime;
+    const duration = video.duration;
+
+    // ✅ Skip glitchy time resets mid-video
+    if (currentTime === 0 && lastTime > 2) return;
+
+    const progress = (currentTime / duration) * 100;
     marker.style.left = `${progress}%`;
 
-	  for (let claimTimestamp of Array.from(notifiedClaims)) {
-		if (claimTimestamp > video.currentTime) {
-		  notifiedClaims.delete(claimTimestamp);
-		}
-	  }
-    lastTime = video.currentTime;
+    // Rewind detection logic
+    if (currentTime < lastTime) {
+      for (let claim of claims) {
+        if (claim.timestamp <= lastTime && claim.timestamp > currentTime) {
+          notifiedClaims.delete(claim.timestamp);
+        }
+      }
+    }
 
-    checkForClaimNotification(video.currentTime);
+    lastTime = currentTime;
 
-    if (video.duration !== lastKnownDuration && video.duration > 0) {
-      lastKnownDuration = video.duration;
+    checkForClaimNotification(currentTime);
+
+    if (duration !== lastKnownDuration && duration > 0) {
+      lastKnownDuration = duration;
       drawWaveform();
     }
   }, 100);
@@ -355,6 +394,26 @@ function showNotificationPopup(text) {
 }
 
 if (window.location.hostname.includes("tiktok.com")) {
-  observeTikTokVideoChanges();
-  waitForVideo();
+  let lastPath = window.location.pathname;
+  setInterval(() => {
+    if (window.location.pathname !== lastPath) {
+      lastPath = window.location.pathname;
+      const match = lastPath.match(/\/video\/(\d+)/);
+      if (match) {
+        console.log("👀 TikTok path changed to new video:", match[1]);
+        currentVideoId = match[1];
+        waitForVideo();
+
+        // 🔁 Redraw waveform and restart marker
+        setTimeout(() => {
+          video = document.querySelector("video");
+          if (video) {
+            console.log("🔄 Redrawing waveform for new TikTok video");
+            drawWaveform();
+            startMarkerUpdate();
+          }
+        }, 1000); // Delay ensures DOM and video are ready
+      }
+    }
+  }, 1000);
 }
