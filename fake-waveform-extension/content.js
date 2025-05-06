@@ -138,6 +138,8 @@ function waitForVideo() {
 }
 
 function setupWaveform() {
+  const existing = document.getElementById('waveformContainer');
+  if (existing) existing.remove();
   const container = document.createElement('div');
   container.id = 'waveformContainer';
   container.style.position = 'fixed';
