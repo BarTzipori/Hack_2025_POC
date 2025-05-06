@@ -72,7 +72,7 @@ setInterval(() => {
   currentPlatform = platform;
   currentVideoId = videoId;
 
-  waitForVideoElement(() => {
+  waitForVideo(() => {
     video = document.querySelector("video");
     if (video) {
       console.log("Video element found");
