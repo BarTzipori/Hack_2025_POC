@@ -53,7 +53,7 @@ function observeTikTokVideoChanges() {
       console.log(`🔄 New TikTok video detected: ${videoId}`);
       lastDetectedVideoId = videoId;
 
-      // Call your waveform redraw logic here
+      // Calling waveform redraw logic 
       setupWaveform();
     }
   });
@@ -63,6 +63,10 @@ function observeTikTokVideoChanges() {
 
 let lastPath = window.location.pathname;
 
+/**
+ * Special TikTok support logic: Detects when user navigates to a new video.
+ * Handles removing the waveform on non-video TikTok pages (e.g., Explore).
+ */
 if (window.location.hostname.includes("tiktok.com")) {
   setInterval(() => {
     const currentPath = window.location.pathname;
@@ -113,6 +117,10 @@ chrome.storage.sync.get([
   waitForVideo();
 });
 
+/**
+ * Listens for incoming messages from the settings popup.
+ * Redraws the waveform with updated settings when the user saves new ones.
+ */
 chrome.runtime.onMessage.addListener((message) => {
   console.log("Message received:", message);
   console.log("New settings loaded, redrawing waveform...");
@@ -150,6 +158,10 @@ function applyThemeSettings() {
   drawWaveform(); // redraw the bar immediately with new settings
 }
 
+/**
+ * Repeatedly checks for the presence of a video element in the DOM.
+ * Once found, initializes waveform and marker tracking.
+ */
 function waitForVideo() {
   const interval = setInterval(() => {
     video = document.querySelector('video');
@@ -160,6 +172,11 @@ function waitForVideo() {
   }, 500);
 }
 
+
+/**
+ * Initializes the waveform container and inserts it into the page.
+ * Called once a video element is detected and prepared for drawing.
+ */
 function setupWaveform() {
   const existing = document.getElementById('waveformContainer');
   if (existing) existing.remove();
@@ -203,6 +220,12 @@ function applySettings() {
   }
   drawWaveform();
 }
+
+/**
+ * Draws the waveform visualization on the screen.
+ * Uses global `fakeClaims` to plot data points on a horizontal timeline.
+ * Creates and positions a canvas element with a line and dots that represent claims.
+ */
 
 function drawWaveform() {
 
@@ -273,6 +296,12 @@ function getDotColor(score) {
   return 'red';
 }
 
+/**
+ * Starts an interval that updates the white time marker position as the video plays.
+ * Also redraws the waveform if video duration changes.
+ * Handles rewinding behavior and skipping over claims.
+ */
+
 function startMarkerUpdate() {
   const marker = document.getElementById('timeMarker');
   let lastKnownDuration = 0;
@@ -338,6 +367,12 @@ function hideTooltip() {
   const tooltip = document.getElementById('floatingTooltip');
   if (tooltip) tooltip.style.display = 'none';
 }
+/**
+ * Checks if a claim is currently reached based on the video time.
+ * If a new claim timestamp is encountered, displays a popup and optionally plays a sound.
+ *
+ * @param {number} currentTime - The current timestamp of the video in seconds.
+ */
 
 function checkForClaimNotification(currentTime) {
   fakeClaims.forEach(claim => {
@@ -392,7 +427,11 @@ function showNotificationPopup(text) {
     console.error("dingAudio is undefined ");
   }
 }
-
+// ====== END DEBUG LOGS ======
+/**
+ * Special TikTok support logic: Detects when user navigates to a new video.
+ * Handles removing the waveform on non-video TikTok pages (e.g., Explore).
+ */
 if (window.location.hostname.includes("tiktok.com")) {
   let lastPath = window.location.pathname;
   setInterval(() => {
@@ -417,6 +456,9 @@ if (window.location.hostname.includes("tiktok.com")) {
     }
   }, 1000);
 }
+/**
+ * YouTube-specific behavior: Watches for new videos and triggers redraw accordingly.
+ */
 if (window.location.hostname.includes("youtube.com")) {
   let lastPath = window.location.pathname;
   setInterval(() => {
