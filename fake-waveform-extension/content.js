@@ -25,7 +25,18 @@ function detectVideoPlatformAndId() {
 
   if (url.hostname.includes("tiktok.com")) {
     const match = url.pathname.match(/\/video\/(\d+)/);
-    if (match) return { platform: "tiktok", videoId: match[1] };
+    if (match) {
+      return { platform: "tiktok", videoId: match[1] };
+    }
+
+    // Try to extract from meta tag (for dynamically loaded pages like For You)
+    const ogVideo = document.querySelector('meta[property="og:video:url"]');
+    if (ogVideo) {
+      const idMatch = ogVideo.content.match(/\/video\/(\d+)/);
+      if (idMatch) {
+        return { platform: "tiktok", videoId: idMatch[1] };
+      }
+    }
   }
 
   return { platform: null, videoId: null };
