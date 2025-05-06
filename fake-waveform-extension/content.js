@@ -295,7 +295,7 @@ function startMarkerUpdate() {
 
     // Rewind detection logic
     if (currentTime < lastTime) {
-      for (let claim of claims) {
+      for (let claim of fakeClaims) {
         if (claim.timestamp <= lastTime && claim.timestamp > currentTime) {
           notifiedClaims.delete(claim.timestamp);
         }
@@ -414,6 +414,27 @@ if (window.location.hostname.includes("tiktok.com")) {
           }
         }, 1000); // Delay ensures DOM and video are ready
       }
+    }
+  }, 1000);
+}
+if (window.location.hostname.includes("youtube.com")) {
+  let lastPath = window.location.pathname;
+  setInterval(() => {
+    const currentPath = window.location.pathname;
+    if (currentPath !== lastPath) {
+      lastPath = currentPath;
+      console.log("🔄 YouTube path changed:", currentPath);
+
+      waitForVideo();
+
+      setTimeout(() => {
+        video = document.querySelector("video");
+        if (video) {
+          console.log("🔄 Redrawing waveform for new YouTube video");
+          drawWaveformWhenReady(); // wait for duration > 0
+          startMarkerUpdate();
+        }
+      }, 1000);
     }
   }, 1000);
 }
